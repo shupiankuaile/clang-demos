@@ -6,10 +6,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 
-#include "conf.h"
-#include "log.h"
-
-#include "../tests/test_suite.h"
+#include "../libs/conf.h"
+#include "../libs/log.h"
 
 static void drawTest(Display* display, Window win, int screenNum);
 
@@ -18,69 +16,64 @@ int main(int argc, char* argv[]) {
     char* file = "../conf/my_tools.conf";
     conf_load(file);
 
-    test_all();
+    Display* display = XOpenDisplay(":0");
+    if (display == NULL) {
+        fprintf(stderr, "Cannot connect to X server %s\n", "simey:0");
+        exit (-1);
+    }
 
-//    Display* display = XOpenDisplay(":0");
-//    if (display == NULL) {
-//        fprintf(stderr, "Cannot connect to X server %s\n", "simey:0");
-//        exit (-1);
-//    }
-//
-//
-//    int screenNum = DefaultScreen(display);
-//    int screenWidth = DisplayWidth(display, screenNum);
-//    int screenHeight = DisplayHeight(display, screenNum);
-//    printf("screenNum:%d, screenWidth:%d, screenHeight:%d \n", screenNum, screenWidth, screenHeight);
-//
-//    int winWidth = screenWidth /3;
-//    int winHeight = screenHeight /3;
-//
-//    int winX = 0;
-//    int winY = 0;
-//
-//    long backgroundColor = BlackPixel(display, screenNum);//BlackPixel
-//    long borderColor = WhitePixel(display, screenNum);//WhitePixel
-//
-//    int winBorderWidth = 10;
-//
-//    Window win = XCreateSimpleWindow(display,
-//                                     RootWindow(display, screenNum),
-//                                     winX, winY,
-//                                     winWidth, winHeight,
-//                                     winBorderWidth,
-//                                     borderColor,
-//                                     backgroundColor);
-//
-//    XSelectInput(display, win, ButtonPressMask|StructureNotifyMask|ExposureMask );
-//
-//    XMapWindow(display, win);
-//
-////    XFlush(display);
-////    XSync(display, 1);
-//
-//
-//
-//
-//    XEvent event;
-//    while(1){
-//        XNextEvent(display, &event);
-//        switch(event.type){
-//            case Expose:
-//                drawTest(display, win, screenNum);
-//                break;
-//            case ConfigureNotify:
-//                if (winWidth != event.xconfigure.width
-//                            || winHeight != event.xconfigure.height) {
-//                    winWidth = event.xconfigure.width;
-//                    winHeight = event.xconfigure.height;
-//                    printf("Size changed to: %d by %d \n", winWidth, winHeight);
-//                }
-//                break;
-//            case ButtonPress:
-//                XCloseDisplay(display);
-//                return 0;
-//        }
-//    }
+
+    int screenNum = DefaultScreen(display);
+    int screenWidth = DisplayWidth(display, screenNum);
+    int screenHeight = DisplayHeight(display, screenNum);
+    printf("screenNum:%d, screenWidth:%d, screenHeight:%d \n", screenNum, screenWidth, screenHeight);
+
+    int winWidth = screenWidth /3;
+    int winHeight = screenHeight /3;
+
+    int winX = 0;
+    int winY = 0;
+
+    long backgroundColor = BlackPixel(display, screenNum);//BlackPixel
+    long borderColor = WhitePixel(display, screenNum);//WhitePixel
+
+    int winBorderWidth = 10;
+
+    Window win = XCreateSimpleWindow(display,
+                                    RootWindow(display, screenNum),
+                                    winX, winY,
+                                    winWidth, winHeight,
+                                    winBorderWidth,
+                                    borderColor,
+                                    backgroundColor);
+
+    XSelectInput(display, win, ButtonPressMask|StructureNotifyMask|ExposureMask );
+
+    XMapWindow(display, win);
+
+    XFlush(display);
+    XSync(display, 1);
+
+    XEvent event;
+    while(1){
+        XNextEvent(display, &event);
+        switch(event.type){
+            case Expose:
+                drawTest(display, win, screenNum);
+                break;
+            case ConfigureNotify:
+                if (winWidth != event.xconfigure.width
+                            || winHeight != event.xconfigure.height) {
+                    winWidth = event.xconfigure.width;
+                    winHeight = event.xconfigure.height;
+                    printf("Size changed to: %d by %d \n", winWidth, winHeight);
+                }
+                break;
+            case ButtonPress:
+                XCloseDisplay(display);
+                return 0;
+        }
+    }
 
     return 0;
 }
